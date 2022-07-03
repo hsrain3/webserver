@@ -54,7 +54,7 @@ void Buffer::retrieveUntil(const char *end) {
     retrieve(end - peek());
 }
 
-//reset slear?
+//reset clear?
 void Buffer::retrieveAll() {
     bzero(&buffer[0],buffer.size());
     readPos = 0;
@@ -78,7 +78,7 @@ void Buffer::ensureWriteable(size_t len) {
 }
 
 //移动写指针
-void Buffer::havWritten(size_t len) {
+void Buffer::hasWritten(size_t len) {
     return writePos + len;
 }
 

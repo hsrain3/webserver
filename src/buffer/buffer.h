@@ -7,7 +7,7 @@
 #include <cstring>
 #include <unistd.h>
 #include <sys/uio.h>
-#include <errno.h>
+#include <sys/errno.h>
 class Buffer{
 public:
     Buffer(int initBufferSize = 1024);
@@ -25,18 +25,19 @@ public:
     void retrieveAll();
     std::string retrieveAllToStr();
     void ensureWriteable(size_t len);
-    void havWritten(size_t len);
+    void hasWritten(size_t len);
 
     void append(const Buffer& buff);
     void append(const void* data, size_t len);
     void append(const char* data, size_t len);
     void append(const std::string& str);
+    char* beginWrite();
+    const char* beginWrite() const;
 
 private:
     char* beginPos();  //buffer start pos
     const char* beginPos() const; //?
-    char* beginWrite();
-    const char* beginWrite() const;
+
     void makeSpace(size_t len);
     std::vector<char>buffer;
     std::atomic<size_t> readPos;

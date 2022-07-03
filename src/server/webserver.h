@@ -8,19 +8,29 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include "../pool/threadPool.h"
+#include "../timer/heaptimer.h"
+#include "../log/log.h"
 class WebServer{
 public:
     WebServer();
     ~WebServer();
     void Start();
 private:
+    bool initSocket();
+    void initEventMode();
+
+
     void dealListen();
     void dealWrite(HTTPConn* client);
     void dealRead(HTTPConn* client);
-    void CloseConn(HTTPConn* client);
+    void closeConn(HTTPConn* client);
     void sendError(int fd, char* info);
     void addClient(int fd, sockaddr_in addr);
     void extendTime(HTTPConn* client);
+    void onRead(HTTPConn* client);
+    void onWrite(HTTPConn* client);
+    void onProcess(HTTPConn* client);
+    int setFdNonblock(int fd);
     int port;
     bool openLinger; //
     int timeoutMS;
