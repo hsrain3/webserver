@@ -19,7 +19,7 @@ public:
     bool full();
     void close();
     size_t size();
-    size_t capacity();
+    size_t getCapacity();
     T front();
     T back();
 
@@ -103,9 +103,9 @@ size_t BlockDeque<T>::size() {
 }
 
 template <class T>
-size_t BlockDeque<T>::capacity() {
+size_t BlockDeque<T>::getCapacity() {
     std::lock_guard<std::mutex> locker(mtx);
-    return capacity
+    return capacity;
 }
 
 template <class T>
