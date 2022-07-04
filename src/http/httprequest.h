@@ -16,6 +16,8 @@
 #include <mysql/mysql.h>
 #include <cstdio>
 #include <cassert>
+#include<algorithm>
+
 class HTTPRequest {
 public:
     enum PARSE_STATE {
@@ -57,7 +59,7 @@ private:
     void parsePost();
     void parseFormUrlEncoded();
 
-    static bool userVerify(const string& name, const std::string& pwd, bool isLogin);
+    static bool userVerify(const std::string& name, const std::string& pwd, bool isLogin);
     PARSE_STATE state;
     std::string method, path, version, body;
     std::unordered_map<std::string, std::string> header;

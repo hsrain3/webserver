@@ -3,9 +3,10 @@
 //
 #include "log.h"
 using namespace std;
-Log::instance = Log();
+
 //?
 Log* Log::getInstance() {
+    static Log instance;
     return &instance;
 }
 
@@ -52,7 +53,7 @@ void Log::init(int level = 1, const char *path, const char *suffix, int maxQueue
         if(!deque) {
             unique_ptr<BlockDeque<string>> newDeque(new BlockDeque<string>);
             deque = move(newDeque);
-            std::unique_ptr<thread> newThread(new thread(FlushLogThread));
+            std::unique_ptr<thread> newThread(new thread(flushLogThread));
             writeThread = move(newThread);
         }
     } else {
@@ -68,19 +69,19 @@ void Log::init(int level = 1, const char *path, const char *suffix, int maxQueue
 
     char fileName[LOG_NAME_LEN] = {0};
     snprintf(fileName, LOG_NAME_LEN - 1, "%s/%04d_%02d_%02d%s",
-             path_, t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, suffix_);
-    toDay_ = t.tm_mday;
+             this->path, t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, this->suffix);
+    toDay = t.tm_mday;
 
     {
-        lock_guard<mutex> locker(mtx_);
-        buff_.RetrieveAll();
+        lock_guard<mutex> locker(mtx);
+        buff.retrieveAll();
         if(fp) {
             flush(); //?
             fclose(fp);
         }
 
         fp = fopen(fileName, "a");
-        if(fp_ == nullptr) {
+        if(fp == nullptr) {
             mkdir(path, 0777);
             fp = fopen(fileName, "a");
         }
@@ -101,7 +102,7 @@ void Log::write(int level, const char *format, ...) {
         locker.unlock();
         char newFile[LOG_NAME_LEN];
         char tail[36] = {0};
-        snprintf(tail, 36, "%04d_02d_%02d", t.tm_year,+1900, t.tm_year + 1900, t.tm_mon + 1, t.tm_mday);
+        snprintf(tail, 36, "%04d_%02d_%02d", t.tm_year+1900, t.tm_mon + 1, t.tm_mday);
         if(toDay != t.tm_mday) {
             snprintf(newFile, LOG_NAME_LEN - 72, "%s/%s%s", path, tail, suffix);
             toDay = t.tm_mday;

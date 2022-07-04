@@ -14,8 +14,8 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <stdarg.h>
-#include <io.h>
 #include <assert.h>
+#include<string.h>
 class Log {
 public:
     void init(int level, const char* path = "./log", const char* suffix  =".log", int maxQueueCapacity = 1024);
@@ -26,7 +26,7 @@ public:
     void flush();
     int getLevel();
     void setLevel(int level);
-    bool isOpen() { return isOpen;}
+    bool getIsOpen() { return isOpen;}
 
 private:
     Log();
@@ -34,14 +34,14 @@ private:
     virtual ~Log();
     void asyncWrite();
 
-    static Log instance;
+   // static Log instance;
     static  const int LOG_PATH_LEN = 256;
     static const int LOG_NAME_LEN = 256;
     static const int MAX_LINES = 50000;
 
     const char* path;
     const char* suffix;
-    int MAX_LINES;
+    int maxLine; //deprecated
     int lineCount;
     int toDay;
 
@@ -59,22 +59,18 @@ private:
 };
 
 
-#define LOG_BASE(level, format,...) \
-    do{ \
-        Log* log = Log::getInstance(); \
-        if(log->isOpen() && log->getLevel() <= level) { \
-            log->write(level,format,##_VA_ARGS_);       \
-            log->flush();           \
+#define LOG_BASE(level, format, ...) \
+    do {\
+        Log* log = Log::getInstance();\
+        if (log->getIsOpen() && log->getLevel() <= level) {\
+            log->write(level, format, ##__VA_ARGS__); \
+            log->flush();\
         }\
-
     } while(0);
 
-#define LOG_DEBUG(format,...) do{LOG_BASE(0,format,##_VA_ARGS_)} while(0);
-
-#define LOG_INFO(format,...) do{LOG_BASE(1,format,##_VA_ARGS_)} while(0);
-
-#define LOG_WARN(format,...) do{LOG_BASE(2,format,##_VA_ARGS_)} while(0);
-
-#define LOG_ERROR(format,...) do {LOG_BASE(3,format,##_VA_ARGS_)} while(0);
+#define LOG_DEBUG(format, ...) do {LOG_BASE(0, format, ##__VA_ARGS__)} while(0);
+#define LOG_INFO(format, ...) do {LOG_BASE(1, format, ##__VA_ARGS__)} while(0);
+#define LOG_WARN(format, ...) do {LOG_BASE(2, format, ##__VA_ARGS__)} while(0);
+#define LOG_ERROR(format, ...) do {LOG_BASE(3, format, ##__VA_ARGS__)} while(0);
 
 #endif //WEBSERVER_LOG_H

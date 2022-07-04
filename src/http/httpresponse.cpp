@@ -28,14 +28,14 @@ const unordered_map<string,string> HTTPResponse::SUFFIX_TYPE = {
         { ".js",    "text/javascript "},
 };
 
-const unordered_map<int string> HTTPResponse::CODE_STATUS = {
+const unordered_map<int,string> HTTPResponse::CODE_STATUS = {
         {200,"OK"},
         {400,"Bad Request"},
         {403,"Forbidden"},
         {404, "Not Found"},
 };
 
-const unordered_map<int string> HTTPResponse::CODE_PATH = {
+const unordered_map<int,string> HTTPResponse::CODE_PATH = {
         {400,"/400.html"},
         {403, "/403.html"},
         {404, "/404.html"},
@@ -49,12 +49,12 @@ HTTPResponse::HTTPResponse() {
 }
 
 HTTPResponse::~HTTPResponse() {
-    UnmapFile();
+    unmapFile();
 }
 
 void HTTPResponse::init(const std::string &srcDir, std::string &path, bool isKeepAlive, int code) {
     assert(srcDir != "");
-    if(mmFile) {UnmapFile();} //先解除映射
+    if(mmFile) {unmapFile();} //先解除映射
     this->code = code;
     this->isKeepAlive = isKeepAlive;
     this->path = path;
@@ -84,7 +84,7 @@ char* HTTPResponse::getFile() {
     return mmFile;
 }
 
-size_t HTTPResponse::FileLen() const {
+size_t HTTPResponse::fileLen() const {
     return mmFileStat.st_size;
 }
 
@@ -165,17 +165,17 @@ void HTTPResponse::errorContent(Buffer &buff, string message) {
     string body,status;
     body += "<html><title>Error</title>";
     body += "<body bgcolor=\"ffffff\">";
-    if(CODE_STATUS.count(code_) == 1) {
-        status = CODE_STATUS.find(code_)->second;
+    if(CODE_STATUS.count(code) == 1) {
+        status = CODE_STATUS.find(code)->second;
     } else {
         status = "Bad Request";
     }
-    body += to_string(code_) + " : " + status  + "\n";
+    body += to_string(code) + " : " + status  + "\n";
     body += "<p>" + message + "</p>";
     body += "<hr><em>TinyWebServer</em></body></html>";
 
-    buff.Append("Content-length: " + to_string(body.size()) + "\r\n\r\n");
-    buff.Append(body);
+    buff.append("Content-length: " + to_string(body.size()) + "\r\n\r\n");
+    buff.append(body);
 }
 
 

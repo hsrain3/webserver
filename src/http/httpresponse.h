@@ -11,6 +11,9 @@
 #include <unordered_map>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include<unistd.h>
+#include <fcntl.h> 
+
 
 class HTTPResponse{
 public:
@@ -24,7 +27,7 @@ public:
     char* getFile();
     size_t fileLen() const;
     void errorContent(Buffer& buff, std::string message);
-    int getCode() const; {return code;}
+    int getCode() const {return code;}
 private:
     void addStateLine(Buffer& buff);
     void addHeader(Buffer& buff);

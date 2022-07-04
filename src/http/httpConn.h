@@ -17,10 +17,10 @@ public:
     HTTPConn();
     ~HTTPConn();
     void init(int sockFd, const sockaddr_in& addr);
-    size_t read(int* saveErrno);
-    size_t write(int* saveErrno);
+    ssize_t read(int* saveErrno);
+    ssize_t write(int* saveErrno);
     int toWriteBytes();
-    void close();
+    void closeConn();
     bool process();  //业务逻辑
     int getFd() const;
     int getPort() const;

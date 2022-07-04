@@ -6,21 +6,21 @@
 
 using namespace std;
 
-const char* HttpConn::srcDir;
-std::atomic<int> HttpConn::userCount;
+const char* HTTPConn::srcDir;
+std::atomic<int> HTTPConn::userCount;
 
-bool HttpConn::isET;
+bool HTTPConn::isET;
 
 
 
 HTTPConn::HTTPConn() {
     fd = -1;
-    addr = ={0};
+    addr = {0};
     isClose = true;
 }
 
 HTTPConn::~HTTPConn() {
-    close();
+    closeConn();
 }
 
 
@@ -34,8 +34,9 @@ void HTTPConn::init(int sockFd, const sockaddr_in &addr_) {
     writeBuff.retrieveAll();
     readBuff.retrieveAll();
     isClose = false;
-    //todo: log
+    LOG_INFO("Client[%d](%s:%d) in, userCount:%d", fd, getIP(), getPort(), (int)userCount);
 }
+
 
 ssize_t HTTPConn::read(int *saveErrno) {
     //一次性读出所有数据 et模式非阻塞，直到
@@ -81,16 +82,16 @@ ssize_t HTTPConn::write(int *saveErrno) {
 }
 
 int HTTPConn::toWriteBytes() {
-    return iov_[0].iov_len + iov_[1].iov_len;
+    return iov[0].iov_len + iov[1].iov_len;
 }
 
-void HTTPConn::close() {
+void HTTPConn::closeConn() {
     response.unmapFile();
     if(isClose == false) {
         isClose = true;
         userCount --;
         close(fd);
-        LOG_INFO("Client[%d](%s:%d) quit, UserCount:%d", fd_, GetIP(), GetPort(), (int)userCount);
+        LOG_INFO("Client[%d](%s:%d) quit, UserCount:%d", fd, getIP(), getPort(), (int)userCount);
     }
 }
 
@@ -118,7 +119,7 @@ bool HTTPConn::process() {
     }
     else if(request.parse(readBuff)) {
         LOG_DEBUG("%s",request.getPath().c_str());
-        response.init(srcDir,request.getPath(),request.isKeepAlive(),200)
+        response.init(srcDir,request.getPath(),request.isKeepAlive(),200);
     } else {
         //解析失败
         response.init(srcDir, request.getPath(), false,400);
@@ -136,7 +137,7 @@ bool HTTPConn::process() {
         iovCnt = 2;
     }
 
-    LOG_DEBUG("filesize:%d, %d  to %d", response_.FileLen() , iovCnt_, ToWriteBytes());
+    LOG_DEBUG("filesize:%d, %d  to %d", response.fileLen() , iovCnt, toWriteBytes());
     return true;
 
 

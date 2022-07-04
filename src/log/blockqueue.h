@@ -49,7 +49,7 @@ private:
 };
 
 template <class T>
-BlockDeque<T>::BlockDeque<T>(size_t maxCapacity) :capacity(maxCapacity) {
+BlockDeque<T>::BlockDeque(size_t maxCapacity) :capacity(maxCapacity) {
     assert(capacity > 0);
     isClose = false;
 }

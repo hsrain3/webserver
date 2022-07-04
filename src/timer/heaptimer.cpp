@@ -67,7 +67,7 @@ void HeapTimer::doWork(int id) {
     del(i);
 }
 
-void HeapTimer:del(size_t index) {
+void HeapTimer::del(size_t index) {
     assert(!heap.empty() && index >= 0&& index < heap.size());
     size_t i = index;
     size_t n = heap.size() - 1;
@@ -118,7 +118,7 @@ int HeapTimer::GetNextTick() {
     tick();
     size_t res = -1;
     if(!heap.empty()) {
-        res = std::chrono::duration_cast<MS>(node.expires - Clock::now()).count();
+        res = std::chrono::duration_cast<MS>(heap.front().expires - Clock::now()).count();
         if(res < 0) {res = 0;} //?
     }
     return res;

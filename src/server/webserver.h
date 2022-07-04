@@ -12,19 +12,22 @@
 #include "../log/log.h"
 class WebServer{
 public:
-    WebServer();
+    WebServer(int port, int trigMode, int timeoutMS, bool OptLinger, 
+        int sqlPort, const char* sqlUser, const  char* sqlPwd, 
+        const char* dbName, int connPoolNum, int threadNum,
+        bool openLog, int logLevel, int logQueSize);
     ~WebServer();
     void Start();
 private:
     bool initSocket();
-    void initEventMode();
+    void initEventMode(int trigMode);
 
 
     void dealListen();
     void dealWrite(HTTPConn* client);
     void dealRead(HTTPConn* client);
     void closeConn(HTTPConn* client);
-    void sendError(int fd, char* info);
+    void sendError(int fd, const char* info);
     void addClient(int fd, sockaddr_in addr);
     void extendTime(HTTPConn* client);
     void onRead(HTTPConn* client);
@@ -36,6 +39,7 @@ private:
     int timeoutMS;
     bool isClose;
     int listenFd;
+    char* srcDir;
     uint32_t listenEvent;
     uint32_t connEvent;
     std::unique_ptr<HeapTimer> timer;

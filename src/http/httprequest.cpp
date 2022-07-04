@@ -13,7 +13,7 @@ const unordered_map<string,int> HTTPRequest::DEFAULT_HTML_TAG {
         {"/register.html", 0}, {"/login.html", 1},
 };
 
-void HTTPRequest::Init() {
+void HTTPRequest::init() {
     method = path = version = body = "";
     state = REQUEST_LINE;
     header.clear();
@@ -30,14 +30,14 @@ bool HTTPRequest::isKeepAlive() const {
 }
 
 bool HTTPRequest::parse(Buffer &buff) {
-    const char CRLF = "\r\n";
+    const char* CRLF = "\r\n";
     if(buff.readableBytes() <= 0) {
         return false;
     }
     while(buff.readableBytes()&&state != FINISH) {
         //读一行
-        const char* lineEnd = search(buff.peek(),buff.beginWrite(),CRLF,CRLF + 2);
-        string line(buff.Peek(),lineEnd);
+        const char* lineEnd = search(buff.peek(),buff.beginWriteConst(),CRLF,CRLF + 2);
+        string line(buff.peek(),lineEnd);
         switch(state) {
             case REQUEST_LINE:
                 //解析请求首行
@@ -51,7 +51,7 @@ bool HTTPRequest::parse(Buffer &buff) {
             case HEADERS:
                 parseHeader(line);
                 if(buff.readableBytes() <= 2) { //?
-                    state = FINISH
+                    state = FINISH;
                 }
                 break;
             case BODY:
@@ -64,7 +64,7 @@ bool HTTPRequest::parse(Buffer &buff) {
         buff.retrieveUntil(lineEnd+2);
 
     }
-    //todo: log
+    LOG_DEBUG("[%s], [%s], [%s]", method.c_str(), path.c_str(), version.c_str());
     return true;
 }
 
@@ -95,7 +95,7 @@ bool HTTPRequest::parseRequestLine(const std::string &line) {
 
         return true;
     }
-    //todo: log error
+     LOG_ERROR("RequestLine Error");
     return false;
 
 }
@@ -103,10 +103,10 @@ bool HTTPRequest::parseRequestLine(const std::string &line) {
 void HTTPRequest::parseHeader(const std::string &line) {
     regex pattern("^([^:]*): ?(.*)$");
     smatch subMatch;
-    if(regex_match(linr,subMatch,pattern)) {
+    if(regex_match(line,subMatch,pattern)) {
         header[subMatch[1]] = subMatch[2];
     }else {
-        state = body;
+        state = BODY;
     }
 }
 
@@ -114,7 +114,7 @@ void HTTPRequest::parseBody(const std::string &line) {
     body = line;
     parsePost();
     state = FINISH;
-    //todo:log
+     LOG_DEBUG("Body:%s, len:%d", line.c_str(), line.size());
 
 }
 
@@ -129,7 +129,7 @@ void::HTTPRequest::parsePost() {
         parseFormUrlEncoded();
         if(DEFAULT_HTML_TAG.count(path)) {
             int tag = DEFAULT_HTML_TAG.find(path)->second;
-            //todo； log
+              LOG_DEBUG("Tag:%d", tag);
             if(tag == 0|| tag == 1) {
                 bool isLogin = (tag == 1);
                 if(userVerify(post["username"], post["password"], isLogin)) {
@@ -147,6 +147,7 @@ void HTTPRequest::parseFormUrlEncoded() {
     string key, value;
     int num = 0;
     int n = body.size();
+    int i = 0,j = 0;
     for(;i < n;i ++) {
         //url decode
         char ch = body[i];
@@ -169,7 +170,7 @@ void HTTPRequest::parseFormUrlEncoded() {
                 value = body.substr(j,i - j);
                 j = i + 1;
                 post[key] = value;
-                //todo: log
+                LOG_DEBUG("%s = %s", key.c_str(), value.c_str());
                 break;
             default:
                 break;
@@ -199,7 +200,7 @@ bool HTTPRequest::userVerify(const string &name, const std::string &pwd, bool is
     if(!isLogin) {flag = true;}
     //查询用户及密码
     snprintf(order,256,"Select username, password from user where username='%s' LIMIT 1", name.c_str());
-    LOG_DEBUG("%s".order);
+    LOG_DEBUG("%s",order);
 
     if(mysql_query(sql,order)) {
         mysql_free_result(res);
@@ -230,7 +231,7 @@ bool HTTPRequest::userVerify(const string &name, const std::string &pwd, bool is
     if(!isLogin && flag == true) {
         LOG_DEBUG("register!");
         bzero(order, 256);
-        snprintf(order, 256, "INDERT INTO user(username, password) VALUES('%s', '%s)", name.c_str(),password.c_str());
+        snprintf(order, 256, "INDERT INTO user(username, password) VALUES('%s', '%s)", name.c_str(),pwd.c_str());
         LOG_DEBUG("%s", order);
         if(mysql_query(sql,order)) {
             LOG_DEBUG("insert error");

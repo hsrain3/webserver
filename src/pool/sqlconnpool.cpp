@@ -16,15 +16,14 @@ SQLConnPool* SQLConnPool::getInstance() {
     return &connPool;
 }
 
-void SQLConnPool::init(const char *host, int port, const char *user, const char *pwd, const char *dbName,
-                       int connSize) {
+void SQLConnPool::init(const char *host, int port, const char *user, const char *pwd, const char *dbName,int connSize) {
     assert(connSize > 0);
     for(int i = 0;i < connSize;i ++) {
         MYSQL* sql = nullptr;
         sql = mysql_init(sql);
         if(!sql) {
             LOG_ERROR("MYSQL init error!");
-            assert(mysql);
+            assert(sql);
         }
 
         sql = mysql_real_connect(sql,host,user,pwd,dbName,port, nullptr,0);
@@ -45,7 +44,7 @@ MYSQL* SQLConnPool::getConn() {
         LOG_WARN("sqlConnPool busy!");
         return nullptr;
     } //?
-    sem_wait(&semId,0,MAX_CONN);
+    sem_wait(&semId);
     {
         lock_guard<mutex> locker(mtx);
         sql = connQue.front();
@@ -54,7 +53,7 @@ MYSQL* SQLConnPool::getConn() {
     return sql;
 }
 
-void SQLConnPool::freeConn(MYSQL *conn) {
+void SQLConnPool::freeConn(MYSQL *sql) {
     assert(sql);
     lock_guard<mutex> locker(mtx);
     connQue.push(sql);
@@ -66,7 +65,7 @@ void SQLConnPool::closePool() {
     while(!connQue.empty()) {
         auto item = connQue.front();
         connQue.pop();
-        mysql.close(item);
+        mysql_close(item);
     }
     mysql_library_end();
 }

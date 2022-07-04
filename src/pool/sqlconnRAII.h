@@ -12,12 +12,12 @@ class SQLConnRAII{
 public:
     SQLConnRAII(MYSQL** sql, SQLConnPool* connPool) {
         assert(connPool);
-        *sql = connPool->GetConn();
+        *sql = connPool->getConn();
         sql_ = *sql;
         connPool_ = connPool;
     }
     ~SQLConnRAII(){
-        if(sql_) {connPool_->freeConn(sql_)}
+        if(sql_) {connPool_->freeConn(sql_);}
     }
 
 private:

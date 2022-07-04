@@ -5,10 +5,13 @@
 #include <chrono>
 #include <vector>
 #include <unordered_map>
-typedef std::function<void> TimeoutCallback;
-typedef std::chrono::hight_resolution_clock Clock;
+#include<algorithm>
+#include<cassert>
+
+typedef std::function<void()> TimeoutCallback;
+typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::milliseconds MS;
-typedef std::chrono::time_point TimeStamp;
+typedef Clock::time_point TimeStamp;
 
 struct TimerNode{
     int id;
@@ -23,9 +26,8 @@ struct TimerNode{
 
 class HeapTimer{
 public:
-    HeapTimer() {heap.reserve(64)};
-    ~HeapTimer(); {clear();}
-    void add(int id, int timeOut, const )
+    HeapTimer() {heap.reserve(64);}
+    ~HeapTimer() {clear();}
     int GetNextTick();
     void adjust(int id, int newExpires);
     void add(int id, int timeOut, const TimeoutCallback& cb);

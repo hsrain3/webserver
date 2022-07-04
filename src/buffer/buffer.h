@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <sys/uio.h>
 #include <sys/errno.h>
+#include<cassert>
 class Buffer{
 public:
     Buffer(int initBufferSize = 1024);
@@ -32,7 +33,7 @@ public:
     void append(const char* data, size_t len);
     void append(const std::string& str);
     char* beginWrite();
-    const char* beginWrite() const;
+    const char* beginWriteConst() const;
 
 private:
     char* beginPos();  //buffer start pos

@@ -17,7 +17,7 @@ char* Buffer::beginWrite() {
     return beginPos() + writePos;
 }
 
-const char* Buffer::beginWrite() const {
+const char* Buffer::beginWriteConst() const {
     return beginPos() + writePos;
 }
 
@@ -39,7 +39,7 @@ size_t Buffer::prependableBytes() const {
 
 //当前读到的位置
 const char* Buffer::peek() const {
-    return BeginPtr() + readPos;
+    return beginPos() + readPos;
 }
 
 //
@@ -79,20 +79,20 @@ void Buffer::ensureWriteable(size_t len) {
 
 //移动写指针
 void Buffer::hasWritten(size_t len) {
-    return writePos + len;
+    writePos += len;
 }
 
 void Buffer::append(const void *data, size_t len) {
     assert(data);
-    append(static_cast<const char*> data, len);
-
+    append(static_cast<const char*> (data), len);
 }
+
 //临时数组搬到 buffer
 void Buffer::append(const char *str, size_t len) {
     assert(str);
     ensureWriteable(len);
     std::copy(str, str + len, beginWrite());
-    havWritten(len);
+    hasWritten(len);
 }
 
 //
@@ -134,7 +134,7 @@ size_t Buffer::readFd(int fd, int *saveErrno) {
 
 size_t Buffer::writeFd(int fd, int *saveErrno) {
     size_t readSize = readableBytes(); //buffer中可以读的长度
-    ssize_t len = write(fd,Peek(),readSize);
+    ssize_t len = write(fd,peek(),readSize);
     if(len < 0) {
         *saveErrno = errno;
        // return len;

@@ -9,7 +9,7 @@ public:
     explicit ThreadPool(size_t threadCount = 8): pool(std::make_shared<Pool>()) {
         assert(threadCount > 0);
         //create threadCount threads
-        for(size_t = 0; i < threadCount;i ++) {
+        for(size_t i = 0; i < threadCount;i ++) {
             //use lambda to initialize thread
             std::thread([pool_ = pool]{
                 std::unique_lock<std::mutex>locker(pool_->mtx);
