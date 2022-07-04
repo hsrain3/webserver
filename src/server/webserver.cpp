@@ -115,6 +115,21 @@ void WebServer::dealListen() {
 
 }
 
+void WebServer::addClient(int fd, sockaddr_in addr) {
+    assert(fd > 0);
+    users[fd].init(fd,addr);
+    if(timeoutMS > 0) {
+        timer->add(fd,timeoutMS, std::bind(&WebServer::closeConn,this,&users[fd]));
+
+    }
+    epoller->addFd(fd,EPOLLIN | connEvent);
+    setFdNonblock(fd);
+    LOG_INFO("Client[%d] in!",users[fd].getFd());
+
+
+}
+
+
 void WebServer::dealRead(HTTPConn* client) {
     assert(client);
     extendTime(client); //延长客户端超时时间
@@ -285,4 +300,11 @@ void WebServer::initEventMode(int trigMode) {
             break;
     }
     HTTPConn ::isET = (connEvent & EPOLLET);
+}
+
+WebServer::~WebServer() {
+    close(listenFd);
+    isClose = true;
+    free(srcDir);
+    SQLConnPool::getInstance()->closePool();
 }
