@@ -2,6 +2,7 @@
 // Created by 王澄雨 on 2022/6/26.
 //
 #include "log.h"
+#include<iostream>
 using namespace std;
 
 //?
@@ -37,17 +38,17 @@ Log::~Log() {
 }
 int Log::getLevel() {
     lock_guard<mutex> locker(mtx);
-    return level;
+    return level_;
 }
 
 void Log::setLevel(int level) {
     lock_guard<mutex> locker(mtx);
-    level = level;
+    level_ = level;
 }
 
 void Log::init(int level = 1, const char *path, const char *suffix, int maxQueueCapacity) {
     isOpen = true;
-    this->level = level;
+    level_ = level;
     if(maxQueueCapacity > 0) {
         isAsync = true;
         if(!deque) {
@@ -84,6 +85,8 @@ void Log::init(int level = 1, const char *path, const char *suffix, int maxQueue
         if(fp == nullptr) {
             mkdir(path, 0777);
             fp = fopen(fileName, "a");
+            cout<<path<<endl;
+            if(!fp) cout<<strerror(errno)<<endl;
         }
         assert(fp != nullptr);
     }
@@ -156,7 +159,7 @@ void Log::appendLogLevelTitle(int level) {
             buff.append("[error]: ", 9);
             break;
         default:
-            buff.append("info: ", 9);
+            buff.append("[info]: ", 9);
             break;
     }
 }

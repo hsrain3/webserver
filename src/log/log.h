@@ -16,6 +16,9 @@
 #include <stdarg.h>
 #include <assert.h>
 #include<string.h>
+#include <errno.h>
+
+
 class Log {
 public:
     void init(int level, const char* path = "./log", const char* suffix  =".log", int maxQueueCapacity = 1024);
@@ -49,7 +52,7 @@ private:
     bool isOpen;
 
     Buffer buff;
-    int level;
+    int level_;
     bool isAsync;
     FILE* fp;
     std::unique_ptr<BlockDeque<std::string>> deque;

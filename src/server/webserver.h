@@ -7,9 +7,14 @@
 #include "../http/httpConn.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include<arpa/inet.h>
+#include<fcntl.h>
+#include<unistd.h>
 #include "../pool/threadPool.h"
 #include "../timer/heaptimer.h"
 #include "../log/log.h"
+#include "../pool/sqlconnpool.h"
+#include "../pool/sqlconnRAII.h"
 class WebServer{
 public:
     WebServer(int port, int trigMode, int timeoutMS, bool OptLinger, 
@@ -43,9 +48,10 @@ private:
     uint32_t listenEvent;
     uint32_t connEvent;
     std::unique_ptr<HeapTimer> timer;
+    std::unique_ptr<ThreadPool> threadpool;
     std::unique_ptr<Epoller> epoller;
     std::unordered_map<int, HTTPConn> users; //store each connection
-    std::unique_ptr<ThreadPool> threadpool;
+    
     static const int MAX_FD = 65536; //max fd num
 
 };

@@ -6,7 +6,7 @@
 using namespace std;
 
 const unordered_set<string> HTTPRequest::DEFAULT_HTML {
-
+     "/index", "/register", "/login",
 };
 
 const unordered_map<string,int> HTTPRequest::DEFAULT_HTML_TAG {

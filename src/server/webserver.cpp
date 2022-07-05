@@ -1,10 +1,11 @@
 #include"webserver.h"
-
+#include<iostream>
 using namespace std;
 
-WebServer::WebServer(int port, int trigMode, int timeountMS, bool optLinger, int sqlPort, const char* sqlUser, 
+WebServer::WebServer(int port, int trigMode, int timeoutMS, bool optLinger, int sqlPort, const char* sqlUser, 
         const char* sqlPwd, const char* dbName, int connPoolNum, 
-        int threadNum, bool openLog, int logLevel, int logQueSize ) 
+        int threadNum, bool openLog, int logLevel, int logQueSize ): port(port), openLinger(optLinger),
+        timeoutMS(timeoutMS),isClose(false),timer(new HeapTimer()), threadpool(new ThreadPool(threadNum)), epoller(new Epoller()) 
 {
     srcDir = getcwd(nullptr, 256); //获取当前工作路径
     assert(srcDir);
@@ -23,12 +24,13 @@ WebServer::WebServer(int port, int trigMode, int timeountMS, bool optLinger, int
         isClose = true;
     }
     if(openLog) {
-        Log::getInstance()->init(logLevel,"./log","./log",logQueSize);
+        Log::getInstance()->init(logLevel,"./log",".log",logQueSize);
         if(isClose) {
             LOG_ERROR("========== Server init error!==========");
 
         }
         else {
+            
             LOG_INFO("========== Server init ==========");
             LOG_INFO("Port:%d, OpenLinger: %s", port, optLinger? "true":"false");
             LOG_INFO("Listen Mode: %s, OpenConn Mode: %s",
@@ -198,7 +200,7 @@ void WebServer::onWrite(HTTPConn *client) {
 
 bool WebServer::initSocket() {
     int ret;
-    sockaddr_in addr;
+    struct sockaddr_in addr;
     if(port > 65535 || port < 1024) {
         LOG_ERROR("Port:%d error", port);
         return false;
@@ -231,6 +233,13 @@ bool WebServer::initSocket() {
         close(listenFd);
         return false;
     }
+    ret = bind(listenFd, (struct sockaddr *)&addr, sizeof(addr));
+    if(ret < 0) {
+        LOG_ERROR("Bind Port:%d error!", port);
+        close(listenFd);
+        return false;
+    }
+    
     ret = listen(listenFd,6);//?
     if(ret < 0) {
          LOG_ERROR("Listen port:%d error!", port);
@@ -246,6 +255,7 @@ bool WebServer::initSocket() {
 
     setFdNonblock(listenFd);
     LOG_INFO("Server port:%d", port);
+    cout<<port<<endl;
     return true;
 
 
