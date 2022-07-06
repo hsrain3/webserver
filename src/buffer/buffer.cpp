@@ -74,7 +74,6 @@ std::string Buffer::retrieveAllToStr() {
 void Buffer::ensureWriteable(size_t len) {
     if(writableBytes() < len) {
         makeSpace(len);
-        std::cout<<writableBytes()<<' '<<len<<std::endl;
     }
     
     assert(writableBytes() >= len);

@@ -2,7 +2,7 @@
 // Created by 王澄雨 on 2022/6/23.
 //
 #include "httprequest.h"
-#include<iostream>
+
 using namespace std;
 
 const unordered_set<string> HTTPRequest::DEFAULT_HTML {
@@ -236,7 +236,8 @@ bool HTTPRequest::userVerify(const string &name, const std::string &pwd, bool is
         snprintf(order, 256, "INSERT INTO user(username, password) VALUES('%s', '%s')", name.c_str(),pwd.c_str());
         LOG_DEBUG("%s", order);
         if(mysql_query(sql,order)) {
-            LOG_DEBUG("insert error");
+            LOG_DEBUG("insert error: %s", mysql_error(sql));
+           
             flag = false;
         }
         //flag = true;

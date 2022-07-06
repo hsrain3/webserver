@@ -85,8 +85,7 @@ void Log::init(int level = 1, const char *path, const char *suffix, int maxQueue
         if(fp == nullptr) {
             mkdir(path, 0777);
             fp = fopen(fileName, "a");
-            cout<<path<<endl;
-            if(!fp) cout<<strerror(errno)<<endl;
+            if(!fp) LOG_DEBUG(strerror(errno));
         }
         assert(fp != nullptr);
     }
@@ -100,6 +99,7 @@ void Log::write(int level, const char *format, ...) {
     struct tm *sysTime = localtime(&tSec);
     struct tm t = *sysTime;
     va_list valist;
+    //这里加锁？
     if(toDay != t.tm_mday || (lineCount&&(lineCount%MAX_LINES == 0))) {
         unique_lock<mutex> locker(mtx);
         locker.unlock();

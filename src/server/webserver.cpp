@@ -61,7 +61,7 @@ void WebServer::Start() {
         }
         //在timeMS时间内有时间发生 epoll_wait立即返回，否则等到timeMS时间后返回（处理超时连接，否则一直阻塞）， timems = -1表示一直阻塞直到有事件
         int eventCnt = epoller->wait(timeMS); //减少epoll_wait调用次数
-        //std::cout<<eventCnt<<std::endl;
+       
         //遍历事件
         for(int i = 0;i < eventCnt; i++) {
             int fd = epoller->getEventFd(i);
@@ -108,11 +108,9 @@ void WebServer::dealListen() {
     else if(HTTPConn::userCount >= MAX_FD) {
         sendError(fd, "Server busy!");
         LOG_WARN("Clients is full!");
-        std::cout<<"Server busy!"<<std::endl;
         return;
     }
     addClient(fd, addr);
-    std::cout<<"add client"<<std::endl;
    }while (listenEvent & EPOLLET); //et模式一直accept直到无fd
 
 

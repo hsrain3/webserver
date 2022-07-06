@@ -17,7 +17,7 @@
 #include <cstdio>
 #include <cassert>
 #include<algorithm>
-
+#include<openssl/md5.h>
 class HTTPRequest {
 public:
     enum PARSE_STATE {
