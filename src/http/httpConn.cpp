@@ -26,7 +26,7 @@ HTTPConn::~HTTPConn() {
 
 
 void HTTPConn::init(int sockFd, const sockaddr_in &addr_) {
-    assert(fd > 0);
+    assert(sockFd > 0);
     userCount++;
     addr  = addr_;
     fd = sockFd;

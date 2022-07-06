@@ -2,6 +2,7 @@
 // Created by 王澄雨 on 2022/6/19.
 //
 #include "buffer.h"
+#include<iostream>
 
 Buffer::Buffer(int initBufferSize) :buffer(initBufferSize), readPos(0), writePos(0) {}
 char* Buffer::beginPos() {
@@ -71,10 +72,12 @@ std::string Buffer::retrieveAllToStr() {
 
 //没空间写 扩容
 void Buffer::ensureWriteable(size_t len) {
-    if(len < writableBytes()) {
+    if(writableBytes() < len) {
         makeSpace(len);
+        std::cout<<writableBytes()<<' '<<len<<std::endl;
     }
-    assert(writableBytes() > len);
+    
+    assert(writableBytes() >= len);
 }
 
 //移动写指针
@@ -137,7 +140,7 @@ size_t Buffer::writeFd(int fd, int *saveErrno) {
     ssize_t len = write(fd,peek(),readSize);
     if(len < 0) {
         *saveErrno = errno;
-       // return len;
+        return len;
     }
 
     readPos += len;
@@ -153,7 +156,7 @@ void Buffer::makeSpace(size_t len) {
     //空间够用 把readpos - writepos copy到头
     else {
         size_t readable = readableBytes();
-        std::copy(beginPos() + readPos, beginWrite(), beginPos());
+        std::copy(beginPos() + readPos, beginPos() + writePos, beginPos());
         readPos = 0;
         writePos = readPos + readable;
         assert(readable == readableBytes());

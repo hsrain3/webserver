@@ -1,6 +1,5 @@
 #include"webserver.h"
 #include<iostream>
-using namespace std;
 
 WebServer::WebServer(int port, int trigMode, int timeoutMS, bool optLinger, int sqlPort, const char* sqlUser, 
         const char* sqlPwd, const char* dbName, int connPoolNum, 
@@ -62,6 +61,7 @@ void WebServer::Start() {
         }
         //在timeMS时间内有时间发生 epoll_wait立即返回，否则等到timeMS时间后返回（处理超时连接，否则一直阻塞）， timems = -1表示一直阻塞直到有事件
         int eventCnt = epoller->wait(timeMS); //减少epoll_wait调用次数
+        //std::cout<<eventCnt<<std::endl;
         //遍历事件
         for(int i = 0;i < eventCnt; i++) {
             int fd = epoller->getEventFd(i);
@@ -108,10 +108,11 @@ void WebServer::dealListen() {
     else if(HTTPConn::userCount >= MAX_FD) {
         sendError(fd, "Server busy!");
         LOG_WARN("Clients is full!");
+        std::cout<<"Server busy!"<<std::endl;
         return;
     }
     addClient(fd, addr);
-
+    std::cout<<"add client"<<std::endl;
    }while (listenEvent & EPOLLET); //et模式一直accept直到无fd
 
 
@@ -207,7 +208,7 @@ bool WebServer::initSocket() {
     }
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl(INADDR_ANY); //转换为网络字节序
-    addr.sin_port = htonl(port);
+    addr.sin_port = htons(port);
     struct linger optLinger = { 0 };
     if(openLinger) {
         //优雅关闭
@@ -234,6 +235,7 @@ bool WebServer::initSocket() {
         return false;
     }
     ret = bind(listenFd, (struct sockaddr *)&addr, sizeof(addr));
+    
     if(ret < 0) {
         LOG_ERROR("Bind Port:%d error!", port);
         close(listenFd);
@@ -255,7 +257,7 @@ bool WebServer::initSocket() {
 
     setFdNonblock(listenFd);
     LOG_INFO("Server port:%d", port);
-    cout<<port<<endl;
+  
     return true;
 
 
