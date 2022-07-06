@@ -2,7 +2,7 @@
 // Created by 王澄雨 on 2022/6/23.
 //
 #include "httprequest.h"
-
+#include<iostream>
 using namespace std;
 
 const unordered_set<string> HTTPRequest::DEFAULT_HTML {
@@ -92,7 +92,7 @@ bool HTTPRequest::parseRequestLine(const std::string &line) {
         method = subMatch[1];
         path = subMatch[2];
         version = subMatch[3];
-
+        state = HEADERS;
         return true;
     }
      LOG_ERROR("RequestLine Error");
@@ -125,7 +125,7 @@ int HTTPRequest::convertHexToDec(char ch) {
 }
 
 void::HTTPRequest::parsePost() {
-    if(method == "POST" && header["Content-type"] == "application/x-ww-form-urlencoded") {
+    if(method == "POST" && header["Content-Type"] == "application/x-www-form-urlencoded") {
         parseFormUrlEncoded();
         if(DEFAULT_HTML_TAG.count(path)) {
             int tag = DEFAULT_HTML_TAG.find(path)->second;
@@ -134,8 +134,10 @@ void::HTTPRequest::parsePost() {
                 bool isLogin = (tag == 1);
                 if(userVerify(post["username"], post["password"], isLogin)) {
                     path = "/welcome.html";
+                } else if (isLogin){
+                    path = "/loginError.html";
                 } else {
-                    path = "/error.html";
+                    path = "/registerError.html";
                 }
             }
         }
@@ -231,13 +233,13 @@ bool HTTPRequest::userVerify(const string &name, const std::string &pwd, bool is
     if(!isLogin && flag == true) {
         LOG_DEBUG("register!");
         bzero(order, 256);
-        snprintf(order, 256, "INDERT INTO user(username, password) VALUES('%s', '%s)", name.c_str(),pwd.c_str());
+        snprintf(order, 256, "INSERT INTO user(username, password) VALUES('%s', '%s')", name.c_str(),pwd.c_str());
         LOG_DEBUG("%s", order);
         if(mysql_query(sql,order)) {
             LOG_DEBUG("insert error");
             flag = false;
         }
-        flag = true;
+        //flag = true;
     }
     SQLConnPool::getInstance()->freeConn(sql);
     LOG_DEBUG("User verify success!");

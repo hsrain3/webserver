@@ -46,7 +46,7 @@ void HeapTimer::add(int id, int timeOut, const TimeoutCallback &cb) {
         //new node
         i = heap.size();
         ref[id] = i;
-        heap.push_back({id,Clock ::now() + MS(timeOut)});
+        heap.push_back({id,Clock ::now() + MS(timeOut),cb});
         siftup(i);
     } else {
         //已有节点，更新expire 调整堆
