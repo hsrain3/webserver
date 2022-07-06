@@ -54,7 +54,7 @@ private:
     bool parseRequestLine(const std::string& line);
     void parseHeader(const std::string& line);
     void parseBody(const std::string& line);
-
+    static std::string getPasswordMd5(const std::string& pwd);
     void parsePath();
     void parsePost();
     void parseFormUrlEncoded();

@@ -212,13 +212,19 @@ bool HTTPRequest::userVerify(const string &name, const std::string &pwd, bool is
     res = mysql_store_result(sql);
     j = mysql_num_fields(res);
     fields = mysql_fetch_fields(res);
-
+    // unsigned char pwdHash[pwd.size()];
+    // MD5(reinterpret_cast<const unsigned char*> (pwd.c_str()),pwd.size(), pwdHash);
+    // string pwdMd5;
+    // for(size_t i = 0;i < pwd.size();i ++) {
+    //     pwdMd5.push_back(pwdHash[i]);
+    // }
+    string pwdHash = getPasswordMd5(pwd);
     while(MYSQL_ROW row = mysql_fetch_row(res)) {
         LOG_DEBUG("MYSQL ROW: %s %s", row[0],row[1]);
         string password(row[1]);
         //登录
         if(isLogin) {
-            if(pwd == password) {flag = true;}
+            if(pwdHash == password) {flag = true;}
             else {
                 flag = false;
                 LOG_DEBUG("pwd error!");
@@ -233,7 +239,7 @@ bool HTTPRequest::userVerify(const string &name, const std::string &pwd, bool is
     if(!isLogin && flag == true) {
         LOG_DEBUG("register!");
         bzero(order, 256);
-        snprintf(order, 256, "INSERT INTO user(username, password) VALUES('%s', '%s')", name.c_str(),pwd.c_str());
+        snprintf(order, 256, "INSERT INTO user(username, password) VALUES('%s', '%s')", name.c_str(),pwdHash.c_str());
         LOG_DEBUG("%s", order);
         if(mysql_query(sql,order)) {
             LOG_DEBUG("insert error: %s", mysql_error(sql));
@@ -280,3 +286,16 @@ string HTTPRequest::getPost(const string& key) const {
 
 
 
+string HTTPRequest::getPasswordMd5(const std::string& pwd){
+    unsigned char pwdHash[MD5_DIGEST_LENGTH];
+
+    const char hexToStrMap[] = "0123456789abcdef";
+    MD5(reinterpret_cast<const unsigned char*> (pwd.c_str()),pwd.size(), pwdHash);
+    string pwdMd5;
+    for(size_t i = 0;i < MD5_DIGEST_LENGTH;i ++) {
+
+        pwdMd5.push_back(hexToStrMap[pwdHash[i]/16]);
+        pwdMd5.push_back(hexToStrMap[pwdHash[i]%16]);
+    }
+    return pwdMd5;
+}
