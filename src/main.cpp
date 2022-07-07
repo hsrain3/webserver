@@ -8,7 +8,7 @@
 
 int  main() {
     WebServer server(
-            1316,3,60000,false,3306,"root","hk19990704","webServer", 12,6,true,0,1024
+            1316,3,60000,false,3306,"root","root","webServer", 12,6,false,1,1024
             );
     server.Start();
 }
